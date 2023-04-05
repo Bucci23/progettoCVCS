@@ -13,3 +13,6 @@ venv/
 # Dependency directories
 __pycache__/
 env/
+
+#random images
+robaccia/
