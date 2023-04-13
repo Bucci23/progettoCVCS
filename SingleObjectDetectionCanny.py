@@ -12,7 +12,11 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 if not os.path.exists(mask_dir):
     os.makedirs(mask_dir)
-# Iterate over all the files in the input directory
+if not os.path.exists(intermediate_result):
+    os.makedirs(intermediate_result)
+if not os.path.exists(grabCut_images):
+    os.makedirs(grabCut_images)
+# Iterate over all the files in the in directory
 for filename in os.listdir(input_dir):
     # Check if the file is a JPEG image
     if (filename.endswith('.jpg') or filename.endswith('.jpeg')) or filename.endswith('.JPG'):
