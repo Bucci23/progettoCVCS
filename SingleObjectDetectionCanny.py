@@ -3,8 +3,8 @@ import numpy as np
 import os
 
 # Read the image
-input_dir = 'robaccia/in/'
-output_dir = 'robaccia/out/'
+input_dir = 'data/'
+output_dir = 'out/'
 mask_dir = 'robaccia/edges/'
 intermediate_result = 'robaccia/intermediate'
 grabCut_images = 'robaccia/grabCut'
@@ -40,9 +40,38 @@ for filename in os.listdir(input_dir):
         equR = cv2.equalizeHist(outR)
         '''
         # Find the edges in each channel
+
+        # Versione in multiresolution: trova edges più ciccioni e contours più ampi. Per usare la versione normale commentare da qui...
+        pyramidB = [b]
+        pyramidG = [g]
+        pyramidR = [r]
+        for i in range(4):
+            pyramidB.append(cv2.pyrDown(pyramidB[-1]))
+            pyramidG.append(cv2.pyrDown(pyramidG[-1]))
+            pyramidR.append(cv2.pyrDown(pyramidR[-1]))
+        edgesB = np.zeros(b.shape, dtype=np.uint8)
+        edgesG = np.zeros(g.shape, dtype=np.uint8)
+        edgesR = np.zeros(r.shape, dtype=np.uint8)
+        # Apply edge detection to each level of the pyramid
+        for i in range(len(pyramidB)):
+            edges = cv2.Canny(pyramidB[i], 75, 150)
+            if edgesB.shape != edges.shape:
+                edges = cv2.resize(edges, (edgesB.shape[1], edgesB.shape[0]))
+            edgesB += edges
+            edges = cv2.Canny(pyramidG[i], 75, 150)
+            if edgesG.shape != edges.shape:
+                edges = cv2.resize(edges, (edgesG.shape[1], edgesG.shape[0]))
+            edgesG += edges
+            edges = cv2.Canny(pyramidR[i], 75, 150)
+            if edgesR.shape != edges.shape:
+                edges = cv2.resize(edges, (edgesR.shape[1], edgesR.shape[0]))
+            edgesR += edges
+        # ...A qui. Decommentare le prossime 3 righe
+        '''
         edgesB = cv2.Canny(b, 10, 50)
         edgesG = cv2.Canny(g, 10, 50)
         edgesR = cv2.Canny(r, 10, 50)
+        '''
         # Merge the edges from each channel
         grayEdges = cv2.cvtColor(cv2.merge((edgesB, edgesG, edgesR)), cv2.COLOR_BGR2GRAY)
         # Thresholding to get a binary image
@@ -70,6 +99,7 @@ for filename in os.listdir(input_dir):
             x, y, w, h = cv2.boundingRect(best)
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
             # apply grabCut on the region we have just found.
+            '''
             mask = np.zeros(img.shape[:2], np.uint8)
             mask[y:y + h, x:x + w] = cv2.GC_PR_FGD
             mask[0:100, 0:100] = cv2.GC_PR_BGD
@@ -79,10 +109,11 @@ for filename in os.listdir(input_dir):
             cv2.grabCut(img, mask, None, bgdModel, fgdModel, iterations, cv2.GC_INIT_WITH_MASK)
             mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
             segmented_img = img * mask2[:, :, np.newaxis]
+            '''
         # save both the output image with the bb and the edge map
         cv2.imwrite(os.path.join(output_dir, filename), img)
         cv2.imwrite(os.path.join(mask_dir, filename), eroded)
-        cv2.imwrite(os.path.join(grabCut_images, filename), segmented_img)
+        # cv2.imwrite(os.path.join(grabCut_images, filename), segmented_img)
         # cv2.imwrite(os.path.join(intermediate_result, filename), cv2.merge((equB, equG, equR)))
 
 # Display the original image and the edge-detected image
