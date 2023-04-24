@@ -2,18 +2,19 @@ import cv2
 import numpy as np
 import os
 
+
 # Read the image
 
 
-def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, grabCut_images):
+def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, grabcut_images, thl=75, thh=150):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if not os.path.exists(mask_dir):
         os.makedirs(mask_dir)
     if not os.path.exists(intermediate_result):
         os.makedirs(intermediate_result)
-    if not os.path.exists(grabCut_images):
-        os.makedirs(grabCut_images)
+    if not os.path.exists(grabcut_images):
+        os.makedirs(grabcut_images)
     # Iterate over all the files in the in directory
     predictions = {}
     for filename in os.listdir(input_dir):
@@ -24,7 +25,6 @@ def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, g
             # Apply gaussian blur
             blur = cv2.GaussianBlur(img, (21, 21), 0)
             # Extract gray-level image
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             # Split the channels
             b, g, r = cv2.split(blur)
             '''Prova con histogram equalization (va peggio)
@@ -40,7 +40,7 @@ def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, g
             '''
             # Find the edges in each channel
 
-            # Versione in multiresolution: trova edges più ciccioni e contours più ampi. Per usare la versione normale commentare da qui...
+            # Multiresolution version. To find fatter and stronger edges. To use the classical one comment from here...
             pyramidB = [b]
             pyramidG = [g]
             pyramidR = [r]
@@ -53,19 +53,19 @@ def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, g
             edgesR = np.zeros(r.shape, dtype=np.uint8)
             # Apply edge detection to each level of the pyramid
             for i in range(len(pyramidB)):
-                edges = cv2.Canny(pyramidB[i], 75, 150)
+                edges = cv2.Canny(pyramidB[i], thl, thh)
                 if edgesB.shape != edges.shape:
                     edges = cv2.resize(edges, (edgesB.shape[1], edgesB.shape[0]))
                 edgesB += edges
-                edges = cv2.Canny(pyramidG[i], 75, 150)
+                edges = cv2.Canny(pyramidG[i], thl, thh)
                 if edgesG.shape != edges.shape:
                     edges = cv2.resize(edges, (edgesG.shape[1], edgesG.shape[0]))
                 edgesG += edges
-                edges = cv2.Canny(pyramidR[i], 75, 150)
+                edges = cv2.Canny(pyramidR[i], thl, thh)
                 if edgesR.shape != edges.shape:
                     edges = cv2.resize(edges, (edgesR.shape[1], edgesR.shape[0]))
                 edgesR += edges
-            # ...A qui. Decommentare le prossime 3 righe
+            # to here. Uncomment the next 3 lines
             '''
             edgesB = cv2.Canny(b, 10, 50)
             edgesG = cv2.Canny(g, 10, 50)
@@ -123,4 +123,3 @@ def single_object_detect(input_dir, output_dir, mask_dir, intermediate_result, g
 # Wait for a key press and then exit
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-
