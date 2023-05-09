@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import json
 import csv
@@ -6,15 +7,15 @@ import numpy as np
 import pandas as pd
 import cv2
 import plot_data
-
+from torch.utils.data import Dataset
 import torch
 import torchvision
 from torchvision import transforms as torchtrans
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
-# from myVision.engine import train_one_epoch, evaluate
-import myVision.utils as utils
-import myVision.transforms as T
+from engine import train_one_epoch, evaluate
+import utils as utils
+import transforms as T
 
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
@@ -57,7 +58,7 @@ def load_csv_annotations(dir, test_names):
     return annotations
 
 
-class GroceryDataset(torch.utils.data.Dataset):
+class GroceryDataset(Dataset):
     def __init__(self, files_dir, width, height, transforms=None):
         self.transforms = transforms
         self.files_dir = files_dir
@@ -75,6 +76,7 @@ class GroceryDataset(torch.utils.data.Dataset):
                                               'robaccia/grocery/Grocery_products/TestFiles.txt')
         self.imgs = list(annotated_dict.keys())
         self.annotations = annotated_dict
+        print(len(self.classes))
 
     def annotate(self):
         return annotate_groceries.single_object_detect(self.imgs, 'robaccia/grocery_BBs', 105, 236)
@@ -89,6 +91,7 @@ class GroceryDataset(torch.utils.data.Dataset):
         img_res /= 255.0
         boxes = []
         labels = []
+        relative_boxes = []
         wt = img.shape[1]
         ht = img.shape[0]
         specific_annot = self.annotations[img_name]
@@ -98,7 +101,24 @@ class GroceryDataset(torch.utils.data.Dataset):
             xmax = float(obj[3]) * self.width
             ymin = float(obj[4]) * self.height
             ymax = float(obj[5]) * self.height
+            if xmin<0:
+                xmin = 0
+                rel_xmin = 0
+            if ymin<0:
+                ymin = 0
+                rel_ymin = 0
+            if xmax < 0:
+                xmax = 0
+                rel_xmax = 0
+            if ymax<0:
+                ymax = 0
+                rel_ymax = 0
+            rel_xmin = float(obj[2])
+            rel_xmax = float(obj[3])
+            rel_ymin = float(obj[4])
+            rel_ymax = float(obj[5])
             boxes.append([xmin, ymin, xmax, ymax])
+            relative_boxes.append([rel_xmin, rel_ymin, rel_xmax, rel_ymax])
 
         # convert boxes into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -118,7 +138,7 @@ class GroceryDataset(torch.utils.data.Dataset):
 
         if self.transforms:
             sample = self.transforms(image=img_res,
-                                     bboxes=target['boxes'],
+                                     bboxes=relative_boxes,
                                      labels=labels)
 
             img_res = sample['image']
@@ -155,28 +175,67 @@ def get_transform(train):
             ToTensorV2(p=1.0)
         ], bbox_params={'format': 'pascal_voc', 'label_fields': ['labels']})
 
-
-# loading the dataset
-dataset = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=True))
-dataset_test = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=False))
-
-# split the dataset in train and test set
-torch.manual_seed(1)
-indices = torch.randperm(len(dataset)).tolist()
-
-# train test split
-test_split = 0.2
-tsize = int(len(dataset) * test_split)
-dataset = torch.utils.data.Subset(dataset, indices[:-tsize])
-dataset_test = torch.utils.data.Subset(dataset_test, indices[-tsize:])
-
-# define training and validation data loaders
-data_loader = torch.utils.data.DataLoader(
-    dataset, batch_size=10, shuffle=True, num_workers=4,
-    collate_fn=utils.collate_fn)
-
-data_loader_test = torch.utils.data.DataLoader(
-    dataset_test, batch_size=10, shuffle=False, num_workers=4,
-    collate_fn=utils.collate_fn)
-# print('this dataset has length = ', len(dataset))
-
+if __name__ == '__main__':    
+    multiprocessing.freeze_support()
+    # loading the dataset
+    dataset = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=True))
+    for i in range(len(dataset)):
+        _, target = dataset[i]
+        print(target)
+    dataset_test = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=False))
+    # split the dataset in train and test set
+    torch.manual_seed(1)
+    indices = torch.randperm(len(dataset)).tolist()
+    
+    # train test split
+    test_split = 0.2
+    tsize = int(len(dataset) * test_split)
+    dataset = torch.utils.data.Subset(dataset, indices[:-tsize])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-tsize:])
+    
+    # define training and validation data loaders
+    data_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=10, shuffle=True, num_workers=4,
+        collate_fn=utils.collate_fn)
+    
+    data_loader_test = torch.utils.data.DataLoader(
+        dataset_test, batch_size=10, shuffle=False, num_workers=4,
+        collate_fn=utils.collate_fn)
+    print('this training set has length = ', len(dataset))
+    print('the test set has length = ',len(dataset_test))
+    
+    #TRAINING:
+    
+    # to train on gpu if selected.
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    
+    
+    num_classes = 81
+    
+    # get the model using our helper function
+    model = get_object_detection_model(num_classes)
+    
+    # move model to the right device
+    model.to(device)
+    
+    # construct an optimizer
+    params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.SGD(params, lr=0.005,
+                                momentum=0.9, weight_decay=0.0005)
+    
+    # and a learning rate scheduler which decreases the learning rate by
+    # 10x every 3 epochs
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                   step_size=3,
+                                                   gamma=0.1)
+    # training for 10 epochs
+    num_epochs = 10
+    
+    for epoch in range(num_epochs):
+        # training for one epoch
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
+        # update the learning rate
+        lr_scheduler.step()
+        # evaluate on the test dataset
+        evaluate(model, data_loader_test, device=device)
+    
