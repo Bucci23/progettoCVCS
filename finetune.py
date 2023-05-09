@@ -28,9 +28,9 @@ config.read('config.ini')
 # get the path to training data
 #train_data_path = config['Paths']['train_data_path']
 
-training_dir = 'robaccia/grocery/grocery_products/'
-test_dir = 'robaccia/grocery/grocery_products/'
-file_path = 'robaccia/grocery/grocery_products/TrainingFiles.txt'
+training_dir = config['Paths']['train_data_path']
+test_dir = config['Paths']['train_data_path']
+file_path = config['Paths']['file_path']
 
 
 def load_bbs(filename):
@@ -74,11 +74,14 @@ class GroceryDataset(Dataset):
         lines = []
         self.bbs = load_bbs('grocery_output.json')
         self.classes = {}
+        annotation_path = config['Paths']['annotation_path']
         with open('robaccia/grocery/Grocery_products/Training/classes.csv', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
             next(reader)
             for row in reader:
                 self.classes[row[1]] = row[0]
+        test_path = config['Paths']['test_path']
+        test_file_path = config['Paths']['test_file_path']
         annotated_dict = load_csv_annotations('robaccia/grocery/Grocery_products/Testing/',
                                               'robaccia/grocery/Grocery_products/TestFiles.txt')
         self.imgs = list(annotated_dict.keys())
