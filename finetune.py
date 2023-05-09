@@ -163,7 +163,10 @@ class GroceryDataset(Dataset):
 
 def get_object_detection_model(num_classes):
     # load a model pre-trained on COCO
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(pretrained=True)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -218,8 +221,8 @@ if __name__ == '__main__':
     #TRAINING:
     
     # to train on gpu if selected.
-    #device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    device = torch.device('cpu')
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    #device = torch.device('cpu')
     
     num_classes = 81
     
@@ -240,7 +243,7 @@ if __name__ == '__main__':
                                                    step_size=3,
                                                    gamma=0.1)
     # training for 10 epochs
-    num_epochs = 1
+    num_epochs = 10
     
     for epoch in range(num_epochs):
         # training for one epoch
