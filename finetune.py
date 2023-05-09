@@ -1,10 +1,11 @@
+import configparser
 import multiprocessing
 import os
 import json
 import csv
 import random
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import cv2
 import plot_data
 from torch.utils.data import Dataset
@@ -20,6 +21,12 @@ import transforms as T
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import annotate_groceries
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# get the path to training data
+#train_data_path = config['Paths']['train_data_path']
 
 training_dir = 'robaccia/grocery/grocery_products/'
 test_dir = 'robaccia/grocery/grocery_products/'
