@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 # Read the image
-input_dir = 'input2/'
-output_dir = 'contours/'
+input_dir = 'robaccia/in'
+output_dir = 'robaccia/out'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
