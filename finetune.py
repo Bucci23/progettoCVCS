@@ -12,7 +12,9 @@ from torch.utils.data import Dataset
 import torch
 import torchvision
 from torchvision import transforms as torchtrans
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, FasterRCNN_ResNet50_FPN_V2_Weights, \
+    fasterrcnn_resnet50_fpn_v2, fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights, fasterrcnn_mobilenet_v3_large_fpn,  \
+    FasterRCNN_MobileNet_V3_Large_FPN_Weights, FasterRCNN_MobileNet_V3_Large_320_FPN_Weights, fasterrcnn_mobilenet_v3_large_320_fpn
 
 from engine import train_one_epoch, evaluate
 import utils as utils
@@ -162,11 +164,17 @@ class GroceryDataset(Dataset):
 
 
 def get_object_detection_model(num_classes):
+
+    #weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+    weights = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
+    #weights = FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
+    #weights = FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.DEFAULT
+
     # load a model pre-trained on COCO
-    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
-    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(pretrained=True)
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(weights=weights)
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(weights=weights)
+    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=weights)
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(weights=weights)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -216,7 +224,7 @@ if __name__ == '__main__':
         dataset_test, batch_size=8, shuffle=False, num_workers=4,
         collate_fn=utils.collate_fn)
     print('this training set has length = ', len(dataset))
-    print('the test set has length = ',len(dataset_test))
+    print('the test set has length = ', len(dataset_test))
     
     #TRAINING:
     
@@ -243,7 +251,7 @@ if __name__ == '__main__':
                                                    step_size=3,
                                                    gamma=0.1)
     # training for 10 epochs
-    num_epochs = 10
+    num_epochs = 1
     
     for epoch in range(num_epochs):
         # training for one epoch
@@ -251,5 +259,6 @@ if __name__ == '__main__':
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
+        #torch.save(model.state_dict(), 'model_weights.pth')
         evaluate(model, data_loader_test, device=device)
-    
+
