@@ -151,7 +151,7 @@ class GroceryDataset(Dataset):
 
         if self.transforms:
             sample = self.transforms(image=img_res,
-                                     bboxes=relative_boxes,
+                                     bboxes=boxes,
                                      labels=labels)
 
             img_res = sample['image']
@@ -183,6 +183,8 @@ def get_object_detection_model(num_classes):
 
     return model
 
+def torch_to_pil(img):
+    return torchtrans.ToPILImage()(img).convert('RGB')
 
 # Send train=True from training transforms and False for val/test transforms
 def get_transform(train):
@@ -197,24 +199,20 @@ def get_transform(train):
             ToTensorV2(p=1.0)
         ], bbox_params={'format': 'pascal_voc', 'label_fields': ['labels']})
 
+
 if __name__ == '__main__':    
     multiprocessing.freeze_support()
     # loading the dataset
     dataset = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=True))
-    for i in range(len(dataset)):
-        _, target = dataset[i]
-        print(target)
     dataset_test = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=False))
     # split the dataset in train and test set
     torch.manual_seed(1)
     indices = torch.randperm(len(dataset)).tolist()
-    
     # train test split
     test_split = 0.2
     tsize = int(len(dataset) * test_split)
     dataset = torch.utils.data.Subset(dataset, indices[:-tsize])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-tsize:])
-    
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=8, shuffle=True, num_workers=4,
@@ -252,13 +250,17 @@ if __name__ == '__main__':
                                                    gamma=0.1)
     # training for 10 epochs
     num_epochs = 1
-    
     for epoch in range(num_epochs):
         # training for one epoch
         train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        #torch.save(model.state_dict(), 'model_weights.pth')
+        # torch.save(model.state_dict(), 'model_weights.pth')
         evaluate(model, data_loader_test, device=device)
-
+    img, trg = dataset[34]
+    model.eval()
+    with torch.no_grad():
+        prediction = model([img.to(device)])[0]
+    print(prediction)
+    plot_data.plot_img_bbox(torch_to_pil(img), prediction)
