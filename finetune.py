@@ -1,17 +1,20 @@
+import configparser
 import multiprocessing
 import os
 import json
 import csv
 import random
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import cv2
 import plot_data
 from torch.utils.data import Dataset
 import torch
 import torchvision
 from torchvision import transforms as torchtrans
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, FasterRCNN_ResNet50_FPN_V2_Weights, \
+    fasterrcnn_resnet50_fpn_v2, fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights, fasterrcnn_mobilenet_v3_large_fpn,  \
+    FasterRCNN_MobileNet_V3_Large_FPN_Weights, FasterRCNN_MobileNet_V3_Large_320_FPN_Weights, fasterrcnn_mobilenet_v3_large_320_fpn
 
 from engine import train_one_epoch, evaluate
 import utils as utils
@@ -21,10 +24,17 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import annotate_groceries
 
-training_dir = 'robaccia/grocery/grocery_products/'
-test_dir = 'robaccia/grocery/grocery_products/'
-file_path = 'robaccia/grocery/grocery_products/TrainingFiles.txt'
+config = configparser.ConfigParser()
+config.read('config.ini')
 
+# get the path to training data
+
+training_dir = config['Paths']['train_data_path']
+test_dir = config['Paths']['train_data_path']
+file_path = config['Paths']['file_path']
+
+#torch.cuda.empty_cache()
+#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 
 def load_bbs(filename):
     with open(filename, 'r') as file:
@@ -67,13 +77,16 @@ class GroceryDataset(Dataset):
         lines = []
         self.bbs = load_bbs('grocery_output.json')
         self.classes = {}
-        with open('robaccia/grocery/Grocery_products/Training/classes.csv', newline='') as csvfile:
+        annotation_path = config['Paths']['annotation_path']
+        with open(annotation_path, newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
             next(reader)
             for row in reader:
                 self.classes[row[1]] = row[0]
-        annotated_dict = load_csv_annotations('robaccia/grocery/Grocery_products/Testing/',
-                                              'robaccia/grocery/Grocery_products/TestFiles.txt')
+        test_path = config['Paths']['test_path']
+        test_file_path = config['Paths']['test_file_path']
+        annotated_dict = load_csv_annotations(test_path,
+                                              test_file_path)
         self.imgs = list(annotated_dict.keys())
         self.annotations = annotated_dict
         print(len(self.classes))
@@ -101,22 +114,22 @@ class GroceryDataset(Dataset):
             xmax = float(obj[3]) * self.width
             ymin = float(obj[4]) * self.height
             ymax = float(obj[5]) * self.height
-            if xmin<0:
+            rel_xmin = float(obj[2])
+            rel_xmax = float(obj[3])
+            rel_ymin = float(obj[4])
+            rel_ymax = float(obj[5])
+            if xmin < 0:
                 xmin = 0
                 rel_xmin = 0
-            if ymin<0:
+            if ymin < 0:
                 ymin = 0
                 rel_ymin = 0
             if xmax < 0:
                 xmax = 0
                 rel_xmax = 0
-            if ymax<0:
+            if ymax < 0:
                 ymax = 0
                 rel_ymax = 0
-            rel_xmin = float(obj[2])
-            rel_xmax = float(obj[3])
-            rel_ymin = float(obj[4])
-            rel_ymax = float(obj[5])
             boxes.append([xmin, ymin, xmax, ymax])
             relative_boxes.append([rel_xmin, rel_ymin, rel_xmax, rel_ymax])
 
@@ -151,8 +164,17 @@ class GroceryDataset(Dataset):
 
 
 def get_object_detection_model(num_classes):
+
+    #weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+    weights = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
+    #weights = FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
+    #weights = FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.DEFAULT
+
     # load a model pre-trained on COCO
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(weights=weights)
+    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(weights=weights)
+    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=weights)
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(weights=weights)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -195,20 +217,20 @@ if __name__ == '__main__':
     
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=10, shuffle=True, num_workers=4,
+        dataset, batch_size=8, shuffle=True, num_workers=4,
         collate_fn=utils.collate_fn)
     
     data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=10, shuffle=False, num_workers=4,
+        dataset_test, batch_size=8, shuffle=False, num_workers=4,
         collate_fn=utils.collate_fn)
     print('this training set has length = ', len(dataset))
-    print('the test set has length = ',len(dataset_test))
+    print('the test set has length = ', len(dataset_test))
     
     #TRAINING:
     
     # to train on gpu if selected.
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    
+    #device = torch.device('cpu')
     
     num_classes = 81
     
@@ -229,7 +251,7 @@ if __name__ == '__main__':
                                                    step_size=3,
                                                    gamma=0.1)
     # training for 10 epochs
-    num_epochs = 10
+    num_epochs = 1
     
     for epoch in range(num_epochs):
         # training for one epoch
@@ -237,5 +259,6 @@ if __name__ == '__main__':
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
+        #torch.save(model.state_dict(), 'model_weights.pth')
         evaluate(model, data_loader_test, device=device)
-    
+

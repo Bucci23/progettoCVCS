@@ -14,6 +14,7 @@ venv/
 __pycache__/
 env/
 
+
 #random images
 robaccia/
 *.vsidx
@@ -23,3 +24,5 @@ robaccia/
 .vs/PythonSettings.json
 .vs/VSWorkspaceState.json
 .vs/progettoTriste/v17/.wsuo
+
+config.ini
