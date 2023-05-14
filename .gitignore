@@ -16,3 +16,10 @@ env/
 
 #random images
 robaccia/
+*.vsidx
+*.lock
+*.sqlite
+.vs/ProjectSettings.json
+.vs/PythonSettings.json
+.vs/VSWorkspaceState.json
+.vs/progettoTriste/v17/.wsuo
