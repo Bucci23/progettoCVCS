@@ -5,7 +5,7 @@ import json
 import csv
 import random
 import numpy as np
-#import pandas as pd
+# import pandas as pd
 import cv2
 import plot_data
 from torch.utils.data import Dataset
@@ -13,8 +13,10 @@ import torch
 import torchvision
 from torchvision import transforms as torchtrans
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, FasterRCNN_ResNet50_FPN_V2_Weights, \
-    fasterrcnn_resnet50_fpn_v2, fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights, fasterrcnn_mobilenet_v3_large_fpn,  \
-    FasterRCNN_MobileNet_V3_Large_FPN_Weights, FasterRCNN_MobileNet_V3_Large_320_FPN_Weights, fasterrcnn_mobilenet_v3_large_320_fpn
+    fasterrcnn_resnet50_fpn_v2, fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights, \
+    fasterrcnn_mobilenet_v3_large_fpn, \
+    FasterRCNN_MobileNet_V3_Large_FPN_Weights, FasterRCNN_MobileNet_V3_Large_320_FPN_Weights, \
+    fasterrcnn_mobilenet_v3_large_320_fpn
 
 from engine import train_one_epoch, evaluate
 import utils as utils
@@ -33,8 +35,9 @@ training_dir = config['Paths']['train_data_path']
 test_dir = config['Paths']['train_data_path']
 file_path = config['Paths']['file_path']
 
-#torch.cuda.empty_cache()
-#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+
+# torch.cuda.empty_cache()
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 
 def load_bbs(filename):
     with open(filename, 'r') as file:
@@ -130,6 +133,11 @@ class GroceryDataset(Dataset):
             if ymax < 0:
                 ymax = 0
                 rel_ymax = 0
+            rel_ymax = 1 if rel_ymax > 1 else rel_ymax
+            rel_ymin = 1 if rel_ymin > 1 else rel_ymin
+            rel_xmax = 1 if rel_xmax > 1 else rel_xmax
+            rel_xmin = 1 if rel_xmin > 1 else rel_xmin
+
             boxes.append([xmin, ymin, xmax, ymax])
             relative_boxes.append([rel_xmin, rel_ymin, rel_xmax, rel_ymax])
 
@@ -144,19 +152,20 @@ class GroceryDataset(Dataset):
 
         labels = torch.as_tensor(labels, dtype=torch.int64)
 
-        target = {"boxes": boxes, "labels": labels, "area": area, "iscrowd": iscrowd}
+        target = {"boxes": relative_boxes, "labels": labels, "area": area, "iscrowd": iscrowd}
         # image_id
         image_id = torch.tensor([idx])
         target["image_id"] = image_id
 
         if self.transforms:
-            sample = self.transforms(image=img_res,
-                                     bboxes=boxes,
-                                     labels=labels)
-
-            img_res = sample['image']
-            target['boxes'] = torch.Tensor(sample['bboxes'])
-
+            try:
+                sample = self.transforms(image=img_res,
+                                         bboxes=relative_boxes,
+                                         labels=labels)
+                img_res = sample['image']
+                target['boxes'] = torch.Tensor(sample['bboxes'])
+            except:
+                print('rotto a causa di ', img_name, ' con BBOX: ', target['boxes'])
         return img_res, target
 
     def __len__(self):
@@ -164,16 +173,15 @@ class GroceryDataset(Dataset):
 
 
 def get_object_detection_model(num_classes):
-
-    #weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+    # weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
     weights = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
-    #weights = FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
-    #weights = FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.DEFAULT
+    # weights = FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
+    # weights = FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.DEFAULT
 
     # load a model pre-trained on COCO
-    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(weights=weights)
-    #model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(weights=weights)
-    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=weights)
+    # model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(weights=weights)
+    # model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(weights=weights)
+    # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=weights)
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(weights=weights)
 
     # get number of input features for the classifier
@@ -183,24 +191,26 @@ def get_object_detection_model(num_classes):
 
     return model
 
+
 def torch_to_pil(img):
     return torchtrans.ToPILImage()(img).convert('RGB')
+
 
 # Send train=True from training transforms and False for val/test transforms
 def get_transform(train):
     if train:
         return A.Compose([
-            A.HorizontalFlip(0.5),
+            A.HorizontalFlip(True),
             # ToTensorV2 converts image to pytorch tensor without div by 255
             ToTensorV2(p=1.0)
-        ], bbox_params={'format': 'pascal_voc', 'label_fields': ['labels']})
+        ], bbox_params={'format': 'albumentations', 'label_fields': ['labels']})
     else:
         return A.Compose([
             ToTensorV2(p=1.0)
-        ], bbox_params={'format': 'pascal_voc', 'label_fields': ['labels']})
+        ], bbox_params={'format': 'albumentations', 'label_fields': ['labels']})
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     multiprocessing.freeze_support()
     # loading the dataset
     dataset = GroceryDataset(training_dir, 512, 512, transforms=get_transform(train=True))
@@ -217,50 +227,54 @@ if __name__ == '__main__':
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=8, shuffle=True, num_workers=4,
         collate_fn=utils.collate_fn)
-    
+
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=8, shuffle=False, num_workers=4,
         collate_fn=utils.collate_fn)
     print('this training set has length = ', len(dataset))
     print('the test set has length = ', len(dataset_test))
-    
-    #TRAINING:
-    
+    print('sample img')
+    im, trg = dataset[27]
+    print(trg)
+    plot_data.plot_img_bbox(torch_to_pil(im), trg)
+    # TRAINING:
+
     # to train on gpu if selected.
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    #device = torch.device('cpu')
-    
+    # device = torch.device('cpu')
+
     num_classes = 81
-    
+
     # get the model using our helper function
     model = get_object_detection_model(num_classes)
-    
+
     # move model to the right device
     model.to(device)
-    
+
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.005,
                                 momentum=0.9, weight_decay=0.0005)
-    
+
     # and a learning rate scheduler which decreases the learning rate by
     # 10x every 3 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
     # training for 10 epochs
-    num_epochs = 1
+    num_epochs = 10
+
     for epoch in range(num_epochs):
         # training for one epoch
         train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        # torch.save(model.state_dict(), 'model_weights.pth')
+        torch.save(model.state_dict(), 'model_weights.pth')
         evaluate(model, data_loader_test, device=device)
     img, trg = dataset[34]
     model.eval()
     with torch.no_grad():
         prediction = model([img.to(device)])[0]
     print(prediction)
-    plot_data.plot_img_bbox(torch_to_pil(img), prediction)
+    plot_data.plot_img_bbox(prediction)
