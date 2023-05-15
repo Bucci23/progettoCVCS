@@ -202,6 +202,7 @@ def get_transform(train):
         return A.Compose([
             A.HorizontalFlip(True),
             # ToTensorV2 converts image to pytorch tensor without div by 255
+
             ToTensorV2(p=1.0)
         ], bbox_params={'format': 'albumentations', 'label_fields': ['labels']})
     else:

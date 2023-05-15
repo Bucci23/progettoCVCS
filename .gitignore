@@ -24,5 +24,6 @@ robaccia/
 .vs/PythonSettings.json
 .vs/VSWorkspaceState.json
 .vs/progettoTriste/v17/.wsuo
-
+*.pth
 config.ini
+*.pt
