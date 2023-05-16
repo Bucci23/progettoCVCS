@@ -16,42 +16,35 @@ import load_dataset
 print("PyTorch Version: ",torch.__version__)
 print("Torchvision Version: ",torchvision.__version__)
 import cv2
-filename = 'robaccia\\'
+filename = 'data\\uniform\\IMG_20230414_114036.jpg'
 if __name__ == '__main__':
     #Load filename image, process it using resnet50 and the default pretrained weights, then find the 5 most similar feature vectors in the 'database' folder
     #Load the image
     img = read_image(filename)
     #Load the weights
     weights = ResNet50_Weights.DEFAULT
-    preprocess = weights.transforms()
+    preprocess = weights.transforms(antialias=True)
     #Apply the weights to the image
     img_transformed = preprocess(img)
     #Load the model
-    model = resnet50(weights=ResNet50_Weights.DEFAULT, pretrained=True)
+    model = resnet50(weights=ResNet50_Weights.DEFAULT)
     #Set the model to evaluation mode
     model.eval()
-    #Load the database
-    database = load_dataset.load_img('C:\\Users\\david\\PycharmProjects\\progettoTriste\\robaccia\\grocery\\Grocery_products\\')
     #Load the feature extractor
     feature_extractor = nn.Sequential(*list(model.children())[:-1])
     #Extract the features from the image
     with torch.no_grad():
-        features = feature_extractor(img_transformed)
+        features = feature_extractor(img_transformed.unsqueeze(0))
     #Flatten the features
     features = torch.flatten(features)
     #Find the 5 most similar feature vectors in the database
     #Initialize the list of distances
     distances = []
     #Iterate over the database
-    for im_name in database.keys():
-        #Load the image
-        img = torch.load(im_name + '.pt')
-        #Extract the features
-        with torch.no_grad():
-            features2 = feature_extractor(img)
-        #Flatten the features
-        features2 = torch.flatten(features2)
-        #Compute the distance
+    for im_name in os.listdir('retrieval_database_better\\'):
+        #Load the feature vector
+        features2 = torch.load('retrieval_database_better\\' + im_name)
+        #Compute the l2 distance
         dist = torch.dist(features, features2)
         #Add the distance to the list
         distances.append((im_name, dist))
@@ -61,7 +54,8 @@ if __name__ == '__main__':
     for i in range(5):
         print(distances[i])
     #Plot the image and the 5 most similar images
-    fig, a = plt.subplots(1, 6)
+
+    '''fig, a = plt.subplots(1, 6)
     fig.set_size_inches(10, 10)
     fig.show()
-    a.show()
+    a.show()'''
