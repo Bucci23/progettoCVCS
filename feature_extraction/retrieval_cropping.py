@@ -52,9 +52,9 @@ if __name__ == '__main__':
     #Initialize the list of distances
     distances = []
     #Iterate over the database
-    for im_name in os.listdir('retrieval_database_cropped\\'):
+    for im_name in os.listdir('retrieval_database_better\\'):
         #Load the feature vector
-        features2 = torch.load('retrieval_database_cropped\\' + im_name)
+        features2 = torch.load('retrieval_database_better\\' + im_name)
         #Compute the l2 distance
         dist = torch.dist(features, features2)
         #Add the distance to the list
