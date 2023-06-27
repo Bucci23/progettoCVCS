@@ -119,5 +119,5 @@ if __name__ == '__main__':
 
     paths = []
     paths = obtain_path(distances, training_path)
-    #plot_images(filename, paths)
-    plot_images_big(filename, paths)
+    plot_images(filename, paths)
+    #plot_images_big(filename, paths)
