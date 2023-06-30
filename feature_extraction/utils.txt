@@ -1,0 +1,13 @@
+https://github.com/facebookresearch/dino
+
+https://ai.facebook.com/blog/dino-v2-computer-vision-self-supervised-learning/
+https://purnasaigudikandula.medium.com/dinov2-image-classification-visualization-and-paper-review-745bee52c826
+https://github.com/purnasai/Dino_V2/tree/main
+https://github.com/facebookresearch/dinov2
+https://arxiv.org/abs/2304.07193
+
+
+https://github.com/purnasai/CLIP_Image_Retrieval
+https://github.com/openai/CLIP
+https://github.com/mlfoundations/open_clip
+https://github.com/rom1504/clip-retrieval
