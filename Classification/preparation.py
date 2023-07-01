@@ -23,8 +23,15 @@ class FileOperations:
         lines = self.read_file_lines(file_path)
 
         descriptions = {}
-        for name in directory_names:
-            if lines:
-                descriptions[name] = lines.pop(0).strip()
+        line_index = 0
+        names_len = len(directory_names)
+
+        for i in range(0, names_len, 2):
+            name = directory_names[i]
+            if i + 1 < names_len:
+                next_name = directory_names[i + 1]
+                descriptions[name] = lines[line_index].strip()
+                descriptions[next_name] = lines[line_index].strip()
+                line_index += 1
 
         return descriptions

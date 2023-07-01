@@ -2,6 +2,7 @@ import os
 import configparser
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import mpmath
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -10,6 +11,9 @@ import torch.nn.functional as F
 import open_clip
 from open_clip import tokenizer
 import glob
+import itertools
+from sklearn import metrics
+from sklearn.metrics import ConfusionMatrixDisplay
 
 from Classification.preparation import FileOperations
 
@@ -37,7 +41,7 @@ if __name__ == '__main__':
     #  the outputs are padded to become 77 tokens long, which is what the CLIP models expects
 
     test_path = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test"
-    test_file = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test\\_tokenization_better.txt"
+    test_file = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test\\_tokenization_best.txt"
 
     # Create an instance of the class
     file_ops = FileOperations(test_path)
@@ -58,17 +62,23 @@ if __name__ == '__main__':
     print(descriptions)
     print(descriptions.values())
 
-    text_tokens = tokenizer.tokenize([desc for desc in descriptions.values()]).to(device)
-    print(text_tokens)
+    unique_values = []
+    [unique_values.append(value) for value in descriptions.values() if value not in unique_values]
+    print(unique_values)
 
-    label = 0
+    text_tokens = tokenizer.tokenize([desc for desc in unique_values]).to(device)
+    print(text_tokens[0], text_tokens[12])
+
+    label = [i for i in itertools.chain.from_iterable(zip(range(1, 26), range(1, 26)))]
     correct = []
+    i = 0
+    true_labels = []
+    predicted_labels = []
 
     for cls in classes:
-        label +=1
         class_correct = []
         test_imgs = glob.glob(test_path + '\\' + cls + '/*.jpg')
-        print(test_imgs)
+        #print(test_imgs)
         for img in test_imgs:
             image = Image.open(img)
             image = preprocess(image).unsqueeze(0).to(device)
@@ -87,23 +97,41 @@ if __name__ == '__main__':
 
             similarity = (100.0 * image_features @ text_features.T).softmax(dim=-1)
             values, indices = similarity[0].topk(1)
-            print(f"{cls}: {values[0].item():.2f}")
-            print(indices[0].item(), label)
+            #print(similarity[0].topk(10))
+            #print(f"{cls}: {values[0].item():.2f}")
+            #print(indices[0].item(), label[i])
 
-            if indices[0].item() == label:
+            if indices[0].item() + 1 == label[i]:
                 correct.append(1)
                 class_correct.append(1)
+                true_labels.append(label[i])
+                predicted_labels.append(indices[0].item() + 1)
             else:
                 correct.append(0)
                 class_correct.append(0)
+                true_labels.append(label[i])
+                predicted_labels.append(indices[0].item() + 1)
 
-        print('accuracy on class ' + cls + ' is :' + str(sum(class_correct) / len(class_correct)))
-    print('accuracy on all is : ' + str(sum(correct) / len(correct)))
+        #print('accuracy on class ' + cls + ' is :' + str(sum(class_correct) / len(class_correct) + mpmath.eps))
+        i = i+1
+    #print('accuracy on all is : ' + str(sum(correct) / len(correct)))
+    accuracy = metrics.accuracy_score(true_labels, predicted_labels)
+    precision = metrics.precision_score(true_labels, predicted_labels, average='macro', zero_division=0)
+    recall = metrics.recall_score(true_labels, predicted_labels, average='macro', zero_division=0)
+    f1_score = metrics.f1_score(true_labels, predicted_labels, average='macro', zero_division=0)
 
+    print('Accuracy:', accuracy)
+    print('Precision:', precision)
+    print('Recall:', recall)
+    print('F1-score:', f1_score)
+    cm = ConfusionMatrixDisplay.from_predictions(true_labels, predicted_labels)
+    cm.plot()
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.show()
 
-
-
-    image_or = Image.open('C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test\\beans\\BEANS0005_png.rf.1ac6a53cba0ef42961796f2073839788.jpg')
+"""
+    image_or = Image.open('C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test\\water_multiple\\WATER0244_png.rf.563b8a40887995be8f305feed0c7b1c3.jpg')
     image = preprocess(image_or).unsqueeze(0).to(device)
     with torch.no_grad():
         image_features = model.encode_image(image).float()
@@ -121,4 +149,4 @@ if __name__ == '__main__':
 
     plt.show()
 
-    print(top_probs, top_labels)
+    print(top_probs, top_labels)"""
