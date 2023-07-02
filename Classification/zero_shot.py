@@ -41,6 +41,7 @@ if __name__ == '__main__':
     #  the outputs are padded to become 77 tokens long, which is what the CLIP models expects
 
     test_path = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test"
+    val_path = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\valid"
     test_file = "C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip\\test\\_tokenization_best.txt"
 
     # Create an instance of the class
@@ -78,7 +79,8 @@ if __name__ == '__main__':
     for cls in classes:
         class_correct = []
         test_imgs = glob.glob(test_path + '\\' + cls + '/*.jpg')
-        #print(test_imgs)
+        test_imgs = test_imgs + glob.glob(val_path + '\\' + cls + '/*.jpg')
+        print(test_imgs)
         for img in test_imgs:
             image = Image.open(img)
             image = preprocess(image).unsqueeze(0).to(device)

@@ -58,7 +58,7 @@ def obtain_path(distances, train):
     return paths
 
 
-filename = 'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\IMG_20230413_111136.jpg'
+filename = 'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\IMG_20230414_114523.jpg'
 
 
 if __name__ == '__main__':
