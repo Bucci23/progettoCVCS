@@ -35,9 +35,28 @@ if __name__ == '__main__':
 
     image_or = Image.open(
         'C:\\Users\\pavon\\Downloads\\freiburg-groceries.v10-original.clip'
-        '\\test\\beans\\BEANS0020_png.rf.2af940f2422d01c4bd5c4afdb2c54698.jpg').convert('RGB')
+        '\\test\\milk_multiple\\MILK0148_png.rf.945ff15feca2beb189ffddffc6357721.jpg').convert('RGB')
+
+    image_or = Image.open(
+        'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\Foto7.jpg').convert('RGB')
+
+    image_or = Image.open(
+        'C:\\Users\\pavon\\Downloads\\Grocery_products'
+        '\\Testing\\store1\\images\\10.jpg').convert('RGB')
+
+
     image = transform(image_or).unsqueeze(0).to(device)
     with torch.no_grad():
         generated = model.generate(image)
 
-    print(open_clip.decode(generated[0]).split("<end_of_text>")[0].replace("<start_of_text>", "")[:-2])
+
+    description = open_clip.decode(generated[0]).split("<end_of_text>")[0].replace("<start_of_text>", "")[:-2]
+    print(description)
+
+    plt.imshow(image_or)
+    plt.title(description, size=15)
+    plt.axis('off')
+    plt.show()
+
+
+

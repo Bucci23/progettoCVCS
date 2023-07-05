@@ -1,5 +1,18 @@
-https://github.com/facebookresearch/dino
+DINO
 
+@inproceedings{caron2021emerging,
+  title={Emerging Properties in Self-Supervised Vision Transformers},
+  author={Caron, Mathilde and Touvron, Hugo and Misra, Ishan and J\'egou, Herv\'e  and Mairal, Julien and Bojanowski, Piotr and Joulin, Armand},
+  booktitle={Proceedings of the International Conference on Computer Vision (ICCV)},
+  year={2021}
+}
+
+
+https://arxiv.org/pdf/2104.14294.pdf
+https://github.com/facebookresearch/dino
+https://ai.facebook.com/blog/dino-paws-computer-vision-with-self-supervised-transformers-and-10x-more-efficient-training/
+
+(DINOv2) (other information)
 https://ai.facebook.com/blog/dino-v2-computer-vision-self-supervised-learning/
 https://purnasaigudikandula.medium.com/dinov2-image-classification-visualization-and-paper-review-745bee52c826
 https://github.com/purnasai/Dino_V2/tree/main
@@ -7,7 +20,24 @@ https://github.com/facebookresearch/dinov2
 https://arxiv.org/abs/2304.07193
 
 
+
+CLIP
+
+@inproceedings{Radford2021LearningTV,
+  title={Learning Transferable Visual Models From Natural Language Supervision},
+  author={Alec Radford and Jong Wook Kim and Chris Hallacy and A. Ramesh and Gabriel Goh and Sandhini Agarwal and Girish Sastry and Amanda Askell and Pamela Mishkin and Jack Clark and Gretchen Krueger and Ilya Sutskever},
+  booktitle={ICML},
+  year={2021}
+}
+
+https://arxiv.org/pdf/2103.00020.pdf
+https://arxiv.org/pdf/2212.07143.pdf
+https://github.com/mlfoundations/open_clip
+
+
+(other useful informations)
+https://openai.com/research/clip
 https://github.com/purnasai/CLIP_Image_Retrieval
 https://github.com/openai/CLIP
-https://github.com/mlfoundations/open_clip
 https://github.com/rom1504/clip-retrieval
+https://arxiv.org/pdf/2111.02114.pdf
