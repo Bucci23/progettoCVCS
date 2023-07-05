@@ -23,7 +23,7 @@ for image_index in range(len(annotation_dict)):
     n=len(X)
     print(n/7)
     # Perform spectral clustering with eigengap method for number of clusters
-    affinity_matrix = utils.getAffinityMatrix(X.reshape(-1, 1), k=int(n/7))
+    affinity_matrix = utils.getAffinityMatrix(X.reshape(-1, 1), k=int(n/6))
     # eigenvalues, eigenvectors = np.linalg.eig(affinity_matrix)
     # sorted_indices = np.argsort(eigenvalues)[::-1]  # Sort eigenvalues in descending order
     # eigen_gaps = np.diff(np.sort(eigenvalues)[::-1])[0:10]
@@ -32,9 +32,10 @@ for image_index in range(len(annotation_dict)):
     print(k)
     spectral_model = SpectralClustering(n_clusters=k[0], affinity='precomputed', random_state=0)
     labels = spectral_model.fit_predict(affinity_matrix)
-    print(labels)
+    # print(labels)
     # Plot results: load the image and plot the points colored according to their cluster
     image = plt.imread(f'images\\{image_name}')
+    plt.title(image_index)
     plt.imshow(image)
     plt.scatter(image_data['centerX'], image_data['centerY'], c=labels, s=20, cmap='plasma')
     plt.show()
