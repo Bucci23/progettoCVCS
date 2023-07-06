@@ -7,10 +7,17 @@ from little_nn import FeedForwardNet
 X_dataset, y_dataset = nsc.get_x_and_y()
 y_dataset = y_dataset-4
 # print(y_dataset)
-train_data = X_dataset[:53]
-train_labels = y_dataset[:53]
-test_data = X_dataset[53:]
-test_labels = y_dataset[53:]
+split = False
+if(split):
+    train_data = X_dataset[:53]
+    train_labels = y_dataset[:53]
+    test_data = X_dataset[53:]
+    test_labels = y_dataset[53:]
+else:
+    train_data = X_dataset
+    train_labels = y_dataset
+    test_data = X_dataset
+    test_labels = y_dataset
 
 # Convert the data and labels to PyTorch tensors
 train_data = torch.from_numpy(train_data).float()

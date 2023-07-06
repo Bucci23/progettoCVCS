@@ -1,0 +1,13 @@
+Epoch [1/10], Loss: 90.3962
+Epoch [2/10], Loss: 35.1654
+Epoch [3/10], Loss: 5.5393
+Epoch [4/10], Loss: 5.9917
+Epoch [5/10], Loss: 2.6896
+Epoch [6/10], Loss: 0.1914
+Epoch [7/10], Loss: 0.4471
+Epoch [8/10], Loss: 0.0166
+Epoch [9/10], Loss: 0.0023
+Epoch [10/10], Loss: 0.0027
+
+Accuracy eigangaps: 0.32
+Accuracy little_NN: 0.78    MAE: 1.106
