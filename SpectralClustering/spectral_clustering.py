@@ -4,10 +4,26 @@ from sklearn.cluster import SpectralClustering
 from sklearn.metrics import pairwise_distances
 from sklearn.datasets import make_blobs
 import pandas as pd
+import torch
+from little_nn import FeedForwardNet
+import n_of_shelves_class as nsc
 import clustering_utils as utils
 #read image data from csv file
 dataset = pd.read_csv('spectral_clustering.csv')
 #print(dataset['name'])
+
+def get_n_of_clusters(image_index):
+    model=FeedForwardNet()
+    model = torch.load('model_53.pth')
+    X, _ = nsc.get_x_and_y()
+    cur_X = X[image_index, :]
+    cur_X = cur_X.reshape(1,-1)
+    model.eval()
+    with torch.no_grad():
+        output = model(torch.from_numpy(cur_X).float().reshape(1, -1))
+        _, predicted = torch.max(output.data, 1)
+    return predicted + 4
+
 annotation_dict = {}
 grouped_by_name = dataset.groupby('name')
 for name in grouped_by_name.groups.keys():
@@ -23,14 +39,17 @@ for image_index in range(len(annotation_dict)):
     n=len(X)
     print(n/7)
     # Perform spectral clustering with eigengap method for number of clusters
-    affinity_matrix = utils.getAffinityMatrix(X.reshape(-1, 1), k=int(n/6))
+    
     # eigenvalues, eigenvectors = np.linalg.eig(affinity_matrix)
     # sorted_indices = np.argsort(eigenvalues)[::-1]  # Sort eigenvalues in descending order
     # eigen_gaps = np.diff(np.sort(eigenvalues)[::-1])[0:10]
     # k = np.argmax(eigen_gaps) + 1  # Number of clusters
+    n_clusters = get_n_of_clusters(image_index)
+    affinity_matrix = utils.getAffinityMatrix(X.reshape(-1, 1), k=int(n/n_clusters))
     k, _, _ = utils.eigenDecomposition(affinity_matrix, plot=False, topK=5)
-    print(k)
-    spectral_model = SpectralClustering(n_clusters=k[0], affinity='precomputed', random_state=0)
+    print(k[0])
+    print(n_clusters)
+    spectral_model = SpectralClustering(n_clusters=int(n_clusters), affinity='precomputed', random_state=0)
     labels = spectral_model.fit_predict(affinity_matrix)
     # print(labels)
     # Plot results: load the image and plot the points colored according to their cluster
