@@ -5,11 +5,11 @@ import numpy as np
 import n_of_shelves_class as nsc
 
 class FeedForwardNet(nn.Module):
-    def __init__(self):
+    def __init__(self, n_input=340,n_hidden=64, n_output=5):
         super(FeedForwardNet, self).__init__()
-        self.fc1 = nn.Linear(340, 64)
-        self.fc2 = nn.Linear(64, 32)
-        self.fc3 = nn.Linear(32, 5)
+        self.fc1 = nn.Linear(n_input, n_hidden)
+        self.fc2 = nn.Linear(n_hidden, 32)
+        self.fc3 = nn.Linear(32, n_output)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))

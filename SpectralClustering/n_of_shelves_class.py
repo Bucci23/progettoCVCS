@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import SpectralClustering
 from sklearn.metrics import pairwise_distances
-from sklearn.datasets import make_blobs
 import pandas as pd
 import clustering_utils as utils
 #read image data from csv file
@@ -35,6 +34,41 @@ def get_x_and_y():
     y_dataset = classes['shelves'].to_numpy()
     # print(y_dataset.shape)
     return X_dataset, y_dataset
+
+def get_double_x_and_y(n_features=340):
+    dataset = pd.read_csv('spectral_clustering.csv')
+    #print(dataset['name'])
+    annotation_dict = {}
+    grouped_by_name = dataset.groupby('name')
+    for name in grouped_by_name.groups.keys():
+        annotation_dict[name] = grouped_by_name.get_group(name).drop('name', axis=1)
+    print(len(annotation_dict))
+    classes = pd.read_csv('classes.csv')
+    print(len(classes))
+    length = 0
+    for image_index in range(len(annotation_dict)):
+        image_name = list(annotation_dict.keys())[image_index]
+        image_data = annotation_dict[image_name]
+        X = image_data['centerY'].to_numpy().reshape(1,-1)
+        if(length < X.shape[1]):
+            length = X.shape[1]
+    print(length)
+    X_dataset = np.zeros((len(annotation_dict), n_features*2))
+    # print(X_dataset.shape)
+    for image_index in range(len(annotation_dict)):
+        image_name = list(annotation_dict.keys())[image_index]
+        image_data = annotation_dict[image_name]
+        X = image_data['centerY'].to_numpy().reshape(1,-1)
+        X2 = image_data['centerX'].to_numpy().reshape(1,-1)
+        X_dataset[image_index, 0:X.shape[1]] = X
+        X_dataset[image_index, n_features:n_features+X.shape[1]] = X2
+    # print(X_dataset)
+    y_dataset = classes['shelves'].to_numpy()
+    # print(y_dataset.shape)
+    return X_dataset, y_dataset
+
+
+
 
 if __name__ == '__main__':
     X_dataset, y_dataset = get_x_and_y()
