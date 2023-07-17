@@ -58,7 +58,7 @@ def obtain_path(distances, train):
     return paths
 
 
-filename = 'C:\\Users\\pavon\\Downloads\\Grocery_products\\Training\\Food\\Pasta\\16.jpg'
+filename = 'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\IMG_20230413_183735.jpg'
 
 
 if __name__ == '__main__':
@@ -120,5 +120,5 @@ if __name__ == '__main__':
 
     paths = []
     paths = obtain_path(distances, training_path)
-    #plot_images(filename, paths)
-    plot_images_big(filename, paths)
+    plot_images(filename, paths)
+    #plot_images_big(filename, paths)

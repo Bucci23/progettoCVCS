@@ -58,7 +58,7 @@ def obtain_path(distances, train):
     return paths
 
 
-filename = 'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\IMG_20230414_114523.jpg'
+filename = 'C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\data\\uniform\\Foto22.jpg'
 
 
 if __name__ == '__main__':
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     model.eval()
     model.to(device)
 
-    #Load filename image, process it using Dino, then find the 5 most similar feature vectors in the 'database' folder
+    #Load filename image, process it, then find the 5 most similar feature vectors in the 'database' folder
     #Load the image
     img = Image.open(filename)
 
@@ -119,5 +119,5 @@ if __name__ == '__main__':
 
     paths = []
     paths = obtain_path(distances, training_path)
-    #plot_images(filename, paths)
-    plot_images_big(filename, paths)
+    plot_images(filename, paths)
+    #plot_images_big(filename, paths)
