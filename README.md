@@ -1,34 +1,4 @@
 # From Object detection to Image Captioning in Retail Environment
-The goal of object detection and description at a supermarket utilizing computer vision and natural
-language processing techniques is the issue that we will be looking into. Our proposed pipeline for object
-detection and description in a supermarket is a challenging and interesting problem that can benefit from a
-combination of classical image processing and deep learning-based techniques in order to improve the
-efficiency and accuracy of inventory tracking and management in retail environments.
-<br/>
-We will review the literature on object identification, object recognition, spatial reasoning [5], natural
-language processing and picture captioning to have context and background. We will examine research on
-convolutional neural networks (CNNs) for object detection and recognition, graph-based methods for
-spatial reasoning, rule-based and trainable language models for natural language generation and encoderdecoder models for image captioning.
-For our pipeline, we will use publicly available datasets such as the Freiburg groceries dataset [1], SKU110K
-[2] and RP2K [3] dataset for object detection and recognition.
-<br/>
-The pipeline for our suggested approach will combine traditional image processing operators, geometricbased algorithms, retrieval algorithms, and deep learning-based elements.
-- The images will first be pre-processed using traditional image processing techniques like Canny to
-detect the edges of the objects we want to identify in the scene.
-- Then we will find the patches on the image that contain the objects to feed them to a CNN to
-classify the single objects. We will also use a retrieval component to enhance the performance of
-our network.
-- After that, we will identify the parts of the image that belong to the classified object, to then
-perform some graph based global reasoning to find relationships between the objects.
-- Finally, we will create natural language descriptions of the scene using rule-based template filling.
-<br/>
-To evaluate our results, we will use metrics such as IoU, precision, recall, and F1 score for object detection
-and recognition, and BLEU or ROUGE scores for natural language generation and image captioning. We will
-compare our results against existing methods from the literature [4], but we will also try to vary our initial
-pipeline to find a good mix of classical Computer Vision methods and deep learning algorithms to perform
-object detection and recognition.<br/>
-[1]: https://github.com/PhilJd/freiburg_groceries_dataset <br/>
-[2]: https://github.com/eg4000/SKU110K_CVPR19 <br/>
-[3]: https://www.pinlandata.com/rp2k_dataset/ <br/>
-[4]: https://arxiv.org/pdf/1904.00853.pdf https://arxiv.org/pdf/2006.12634.pdf http://ais.informatik.unifreiburg.de/publications/papers/jund16groceries.pdf
-[5]: https://openaccess.thecvf.com/content_CVPR_2019/papers/Chen_GraphBased_Global_Reasoning_Networks_CVPR_2019_paper.pdf
+This repository contains the reference code for the computer vision and cognitive systems project exam:
+
+We will study the problems of object detection, image classification and content based retrieval at a supermarket using both classical computer vision and deep neural network techniques. In our paper we present a complete pipeline for all of these tasks, in addition we identify object positions in the scene and generate a  natural language description of it. For the object detection pipeline we used a regional convolutional neural network to localize objects in the image, then a feed forward network to predict the number of shelves present in the picture. Finally we performed spatial spectral clustering to identify the products in their specific shelf. Regarding the classification and retrieval part we used a contrastive language-image pretraining (CLIP) neural network to generate embeddings and implement zero-shot classification, along with a classical convolutive classification approach, to then compare the various results. Lastly we produced captions for our images using CoCa (Contrastive Captioner).
