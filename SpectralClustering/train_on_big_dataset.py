@@ -46,9 +46,9 @@ if __name__ == '__main__':
     X_test, y_test = nsc.get_double_x_and_y(int(X_dataset.shape[1]/2))
     print(X_dataset.shape, X_test.shape)
     train_data = X_dataset 
-    train_labels = y_dataset - 1
+    train_labels = y_dataset - 4
     test_data = X_test
-    test_labels = y_test - 1
+    test_labels = y_test - 4
     #Make the test set the same shape as the training set in dimension 1 by padding with zeros
     
     # Convert the data and labels to PyTorch tensors
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     test_data = torch.from_numpy(test_data).float()
     test_labels = torch.from_numpy(test_labels).long()
     test_data = torch.nn.functional.pad(test_data, (0,train_data.shape[1]-test_data.shape[1]), 'constant', 0)
-    model = Bigger_NN(1198,512,10)
-    #model = FeedForwardNet(1198,128,10)
+    # model = Bigger_NN(1198,512,7)
+    model = FeedForwardNet(1198,128,7)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
     num_epochs = 30

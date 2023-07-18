@@ -9,12 +9,12 @@ from little_nn import FeedForwardNet
 import n_of_shelves_class as nsc
 import clustering_utils as utils
 #read image data from csv file
-dataset = pd.read_csv('spectral_clustering.csv')
+dataset = pd.read_csv('SpectralClustering\\spectral_clustering.csv')
 #print(dataset['name'])
 
 def get_n_of_clusters(image_index):
     model=FeedForwardNet()
-    model = torch.load('model_53.pth')
+    model = torch.load('SpectralClustering\\model_53.pth')
     X, _ = nsc.get_x_and_y()
     cur_X = X[image_index, :]
     cur_X = cur_X.reshape(1,-1)
@@ -53,8 +53,10 @@ for image_index in range(len(annotation_dict)):
     labels = spectral_model.fit_predict(affinity_matrix)
     # print(labels)
     # Plot results: load the image and plot the points colored according to their cluster
-    image = plt.imread(f'images\\{image_name}')
+    image = plt.imread(f'SpectralClustering\\images\\{image_name}')
     plt.title(image_index)
     plt.imshow(image)
+    # Create a scatter plot
+    # plt.scatter(image_data['centerX'], image_data['centerY'], cmap='viridis') 
     plt.scatter(image_data['centerX'], image_data['centerY'], c=labels, s=20, cmap='plasma')
     plt.show()

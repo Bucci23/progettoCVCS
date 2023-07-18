@@ -6,14 +6,14 @@ import pandas as pd
 import clustering_utils as utils
 #read image data from csv file
 def get_x_and_y():
-    dataset = pd.read_csv('spectral_clustering.csv')
+    dataset = pd.read_csv('SpectralClustering\\spectral_clustering.csv')
     #print(dataset['name'])
     annotation_dict = {}
     grouped_by_name = dataset.groupby('name')
     for name in grouped_by_name.groups.keys():
         annotation_dict[name] = grouped_by_name.get_group(name).drop('name', axis=1)
     print(len(annotation_dict))
-    classes = pd.read_csv('classes.csv')
+    classes = pd.read_csv('SpectralClustering\\classes.csv')
     print(len(classes))
     length = 0
     for image_index in range(len(annotation_dict)):
