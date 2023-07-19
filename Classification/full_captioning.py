@@ -93,6 +93,6 @@ if __name__ == '__main__':
 
     print(np.mean(scores))
 
-    with open('log_captions.txt', 'w') as file:
+    with open('../robaccia/Captions/log_captions.txt', 'w') as file:
         for i, j, k in zip(image_names, descriptions, scores):
             file.write(f"{i} --- {j} --- {k}\n")
