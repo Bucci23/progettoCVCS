@@ -39,7 +39,7 @@ if __name__ == '__main__':
         with torch.no_grad():
             image_features = model.encode_image(img).float()
 
-        #Flatten the features
+        # Flatten the features
         image_features = torch.flatten(image_features)
 
         im_name_without_path = os.path.basename(im_name)

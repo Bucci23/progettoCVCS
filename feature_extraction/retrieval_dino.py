@@ -71,9 +71,9 @@ if __name__ == '__main__':
         device = torch.device('cpu')
     print('Device:', device)
 
-
-    #Load filename image, process it using Dino, then find the 5 most similar feature vectors in the 'database' folder
-    #Load the image
+    # Load filename image, process it using Dino,
+    # then find the 5 most similar feature vectors in the 'database' folder
+    # Load the image
     img = Image.open(filename)
 
     normalize = transforms.Compose([
@@ -83,10 +83,9 @@ if __name__ == '__main__':
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
 
-    #Apply the weights to the image
+    # Apply the weights to the image
     img_transformed = normalize(img)
     img_transformed = img_transformed.unsqueeze(0).to(device)
-
 
     # model weights paths
     weights_path = 'Dino/dino_resnet50_pretrain.pth'
@@ -97,8 +96,7 @@ if __name__ == '__main__':
     model.load_state_dict(weights)
     model.eval()
 
-
-    #Set the model to evaluation mode
+    # Set the model to evaluation mode
     model.eval()
     model.to(device)
 
@@ -108,10 +106,10 @@ if __name__ == '__main__':
     # Flatten the features
     features = torch.flatten(features)
 
-    #Find the 5 most similar feature vectors in the database
-    #Initialize the list of distances
+    # Find the 5 most similar feature vectors in the database
+    # Initialize the list of distances
     distances = []
-    #Iterate over the database
+    # Iterate over the database
     config = configparser.ConfigParser()
     config.read('C:\\Users\\pavon\\Documents\\progettoCVCSv1.0\\config.ini')
     retrieval_path = config['Paths']['retrieval_dino']

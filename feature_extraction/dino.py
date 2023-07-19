@@ -62,7 +62,7 @@ if __name__ == '__main__':
         with torch.no_grad():
             features = resnet50(img)
 
-        #Flatten the features
+        # Flatten the features
         features = torch.flatten(features)
 
         im_name_without_path = os.path.basename(im_name)
