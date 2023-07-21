@@ -14,6 +14,6 @@ Spectral Clustering --> object shelf detection/clustering
 <br>
 FasterRCNN_on_SKU110K --> object detection, finetuning
 <br>
-Models --> file.pth of the finetuned models
+Models --> file.pth of the finetuned models (not present here)
 
 
