@@ -27,3 +27,4 @@ robaccia/
 *.pth
 config.ini
 *.pt
+Models/
