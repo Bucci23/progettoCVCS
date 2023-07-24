@@ -8,6 +8,7 @@ We will study the problems of object detection, image classification and content
 Feature extraction --> retrieval pipeline
 <br>
 Classification-Captioning --> classification/captioning pipeline
+<br>
 Resnet_on_grocery --> classification on Grocery dataset
 <br>
 Spectral Clustering --> object shelf detection/clustering
